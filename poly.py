@@ -8,7 +8,6 @@ from sklearn.pipeline import Pipeline
 
 # load dataset
 diabetes = load_diabetes()
-
 size = int(diabetes.data.shape[0])
 rnd_indices = np.random.permutation(size)
 train_size = int(size*0.8)
@@ -43,6 +42,7 @@ for count, degree in enumerate([2,5,10]):
     print("Degree ", degree, " rmse: ", "{:10.02f}".format(train_rmse), "{:10.02f}".format(test_rmse))
 
     plt.plot(test_data, test_predict, color=colours[count], label="d %d" % degree)
-    
+
+plt.scatter(test_data, test_target, color='black')
 plt.legend(loc='lower left')
 plt.show()
