@@ -1,4 +1,5 @@
 import numpy as np
+import sys
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_diabetes
 from sklearn.tree import DecisionTreeRegressor, export_graphviz
@@ -7,31 +8,51 @@ from sklearn.decomposition import KernelPCA
 # load dataset
 diabetes = load_diabetes()
 size = int(diabetes.data.shape[0])
-# Random indices for training and testing data
-rnd_indices = np.random.permutation(size)
 train_size = int(size*0.8)
-train_indices = rnd_indices[:train_size]
-test_indices = rnd_indices[train_size:]
+
+def rmse(target, prediction):
+    return np.sqrt(((target - prediction) ** 2).mean())
+
+def rnd_permutation(data, target):
+    # Random indices for training and testing data
+    rnd_indices = np.random.permutation(size)
+    train_indices = rnd_indices[:train_size]
+    test_indices = rnd_indices[train_size:]
+    
+    train_data = data[train_indices, :]
+    train_target = target[train_indices]
+    
+    test_data = data[test_indices, :]
+    test_target = target[test_indices]
+    
+    return train_data, train_target, test_data, test_target
 
 # Perform PCA
 transformer = KernelPCA(n_components=5, kernel='rbf', gamma=0.02)
 X_transformed = transformer.fit_transform(diabetes.data)
 
-train_data = X_transformed[train_indices, :]
-test_data = X_transformed[test_indices, :]
-train_target = diabetes.target[train_indices]
-test_target = diabetes.target[test_indices]
+for depth in range(1,6):
+    best_tree = None
+    train_rmse = None
+    best_test_rmse = sys.float_info.max
 
-tree = DecisionTreeRegressor(max_depth=5)
-tree.fit(train_data, train_target)
+    for iterations in range(100):
+        train_data, train_target, test_data, test_target = rnd_permutation(X_transformed, diabetes.target)
+        tree = DecisionTreeRegressor(max_depth=depth)
+        tree.fit(train_data, train_target)
 
-# Print RMSE on training and testing data
-train_predict = tree.predict(train_data)
-train_rmse = np.sqrt(((train_target - train_predict) ** 2).mean())
+        # Evaluate tree
+        test_rmse = rmse(test_target, tree.predict(test_data))
+        if (test_rmse < best_test_rmse):
+            best_test_rmse = test_rmse
+            best_tree = tree
+            train_rmse = rmse(train_target, tree.predict(train_data))
+    
+    # Print RMSE of best tree
+    print("Tree of depth: ", depth)
+    print(best_tree.max_depth)
+    print("Rmse: ", "{:10.02f}".format(train_rmse), "{:10.02f}".format(best_test_rmse))
 
-test_predict = tree.predict(test_data)
-test_rmse = np.sqrt(((test_target - test_predict) ** 2).mean())
-
-print("Rmse: ", "{:10.02f}".format(train_rmse), "{:10.02f}".format(test_rmse))
-
-export_graphviz(tree, max_depth=2, out_file='tree.dot', rounded=True, filled=True)
+    # Save visualisation
+    file_name = 'tree' + str(depth) + '.dot'
+    export_graphviz(best_tree, max_depth=depth, out_file=file_name, rounded=True, filled=True)
