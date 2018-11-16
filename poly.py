@@ -1,28 +1,31 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import utility
 from sklearn.datasets import load_diabetes
+from sklearn.decomposition import KernelPCA
+import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from sklearn.linear_model import LinearRegression
-from sklearn import preprocessing
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import Pipeline
 
-# load dataset
-diabetes = load_diabetes()
-size = int(diabetes.data.shape[0])
-rnd_indices = np.random.permutation(size)
-train_size = int(size*0.8)
-train_indices = rnd_indices[:train_size]
-test_indices = rnd_indices[train_size:]
+# Perform PCA
+transformer = KernelPCA(n_components=4, kernel='rbf', gamma=0.02)
+X_transformed = transformer.fit_transform(load_diabetes().data)
 
-train_data = preprocessing.scale(diabetes.data[train_indices, :])
-test_data = preprocessing.scale(diabetes.data[test_indices, :])
-train_target = diabetes.target[train_indices]
-test_target = diabetes.target[test_indices]
+# Uniformly randomly split data 80% training and 20% testing
+train_data, train_target, test_data, test_target = utility.rnd_permutation(0.8, X_transformed)
 
 # Create figure where all three models will be plotted
-plt.figure()
-
+plt.figure(1)
+plt.scatter(train_data[:,0], train_target, color='black', marker=',')
+plt.figure(2)
+plt.scatter(train_data[:,1], train_target, color='black', marker=',')
+plt.figure(3)
+plt.scatter(train_data[:,2], train_target, color='black', marker=',')
+plt.figure(4)
+plt.scatter(train_data[:,3], train_target, color='black', marker=',')
 colours = ['teal', 'yellowgreen', 'gold']
+
+
 
 for count, degree in enumerate([2,5,10]):
     # Polynomially expand every feature of the data:
@@ -34,15 +37,24 @@ for count, degree in enumerate([2,5,10]):
 
     # Print RMSE on training and testing data
     train_predict = polynomial_regression.predict(train_data)
-    train_rmse = np.sqrt(((train_target - train_predict) ** 2).mean())
+    train_rmse = utility.rmse(train_target, train_predict)
 
     test_predict = polynomial_regression.predict(test_data)
-    test_rmse = np.sqrt(((test_target - test_predict) ** 2).mean())
+    test_rmse = utility.rmse(test_target, test_predict)
 
     print("Degree ", degree, " rmse: ", "{:10.02f}".format(train_rmse), "{:10.02f}".format(test_rmse))
 
-    plt.plot(test_data, test_predict, color=colours[count], label="d %d" % degree)
+    plt.figure(1)
+    plt.scatter(test_data[:,0], test_predict, color=colours[count], label="d %d" % degree)
+    plt.figure(2)
+    plt.scatter(test_data[:,1], test_predict, color=colours[count], label="d %d" % degree)
+    plt.figure(3)
+    plt.scatter(test_data[:,2], test_predict, color=colours[count], label="d %d" % degree)
+    plt.figure(4)
+    plt.scatter(test_data[:,3], test_predict, color=colours[count], label="d %d" % degree)
 
-plt.scatter(test_data, test_target, color='black')
-plt.legend(loc='lower left')
+# fig_1 = plt.legend(loc='lower left')
+# fig_2 = plt.legend(loc='lower left')
+# fig_3 = plt.legend(loc='lower left')
+# fig_4 = plt.legend(loc='lower left')
 plt.show()
