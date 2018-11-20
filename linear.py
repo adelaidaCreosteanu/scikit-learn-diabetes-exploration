@@ -1,4 +1,4 @@
-import utility
+import utility as u
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 
@@ -16,12 +16,11 @@ def run_linear_regression(diabetes, iterations):
 
         # Calculate RMSE on training and testing data
         train_predict = lin_reg.predict(train_data)
-        train_rmse_sum += utility.rmse(train_target, train_predict)
+        train_rmse_sum += u.rmse(train_target, train_predict)
 
         test_predict = lin_reg.predict(test_data)
-        test_rmse_sum += utility.rmse(test_target, test_predict)
+        test_rmse_sum += u.rmse(test_target, test_predict)
 
     # Print results
-    avg_train_rmse = "{:10.02f}".format(train_rmse_sum/iterations)
-    avg_test_rmse = "{:10.02f}".format(test_rmse_sum/iterations)
-    print("Train rmse: {0}\nTest rmse: {1}".format(avg_train_rmse, avg_test_rmse))
+    print("Linear regression results:")
+    u.print_results(train_rmse_sum/iterations, test_rmse_sum/iterations)
