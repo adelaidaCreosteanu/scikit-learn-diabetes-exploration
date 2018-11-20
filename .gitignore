@@ -1,0 +1,3 @@
+# ignore settings folders
+__pycache__/
+.vscode/
