@@ -5,3 +5,5 @@ __pycache__/
 # ignore graphs, plots and other results
 *.png
 *.dot
+*.pdf
+*.xlsx
