@@ -1,3 +1,7 @@
 # ignore settings folders
 __pycache__/
 .vscode/
+
+# ignore graphs, plots and other results
+*.png
+*.dot
