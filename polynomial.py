@@ -7,12 +7,15 @@ from sklearn.linear_model import LinearRegression
 from matplotlib import pyplot as plt
 
 
+# Apply pca with a radial-basis function kernel
 def perform_pca(data):
     pca = KernelPCA(n_components=4, kernel='rbf', gamma=0.02)
     transformed = pca.fit_transform(data)
     return transformed
 
 
+# Run polynomial regression with different degrees and print the
+# training and testing error
 def run_poly_reg(diabetes, degrees, with_pca=True):
     x = diabetes.data
     y = diabetes.target
@@ -43,6 +46,7 @@ def run_poly_reg(diabetes, degrees, with_pca=True):
         u.print_results(train_rmse_sum/20, test_rmse_sum/20)
 
 
+# Plot polynomial regression of different degrees
 def plot_poly(diabetes, degrees, with_pca=True):
     x = diabetes.data
     y = diabetes.target

@@ -3,11 +3,12 @@ from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
 
 
-def run_linear_regression(diabetes, iterations):
+# Run linear regression niter times and print the average RMSE
+def run_linear_regression(diabetes, niter):
     train_rmse_sum = 0
     test_rmse_sum = 0
 
-    for _ in range(iterations):
+    for _ in range(niter):
         # Uniformly randomly split data 80% training and 20% testing
         train_data, test_data, train_target, test_target = train_test_split(diabetes.data, diabetes.target, test_size=0.2)
         
@@ -22,5 +23,5 @@ def run_linear_regression(diabetes, iterations):
         test_rmse_sum += u.rmse(test_target, test_predict)
 
     # Print results
-    print("Linear regression results:")
-    u.print_results(train_rmse_sum/iterations, test_rmse_sum/iterations)
+    print('Linear regression results:')
+    u.print_results(train_rmse_sum/niter, test_rmse_sum/niter)
