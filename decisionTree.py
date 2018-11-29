@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 
 
 # Find best decision tree over niter random permutations of the data.
-# A visualisation will be saved if dotfile is a file name with ".dot" extension
+# A visualisation will be saved if dotfile is a file name with '.dot' extension
 def best_tree(diabetes, niter=10, dotfile=None):
     best_tree = None
     train_rmse = None
@@ -26,11 +26,14 @@ def best_tree(diabetes, niter=10, dotfile=None):
             train_rmse = u.rmse(train_target, tree.predict(train_data))
 
     # Print RMSE of best tree
-    print("Best decision tree:")
+    print('Best decision tree:')
     u.print_results(train_rmse, best_test_rmse)
 
     if (dotfile != None):
-        # Save visualisation
-        export_graphviz(best_tree, max_depth=5, out_file=dotfile, rounded=True, filled=True, feature_names=["age", "sex", "BMI",
-            "Average Blood Pressure", "Blood Serum 1", "Blood Serum 2", "Blood Serum 3", "Blood Serum 4", "Blood Serum 5", "Blood Serum 6"])
-        print("Convert the .dot to .png using the command: dot -Tpng new.dot -o new.png")
+        if (dotfile.endswith('.dot')):
+            # Save visualisation
+            export_graphviz(best_tree, max_depth=5, out_file=dotfile, rounded=True, filled=True, feature_names=['age', 'sex', 'BMI',
+                'Average Blood Pressure', 'Blood Serum 1', 'Blood Serum 2', 'Blood Serum 3', 'Blood Serum 4', 'Blood Serum 5', 'Blood Serum 6'])
+            print('Convert the .dot to .png using the command: dot -Tpng new.dot -o new.png')
+        else:
+            raise ValueError('The visualisation file has to end in .dot')
