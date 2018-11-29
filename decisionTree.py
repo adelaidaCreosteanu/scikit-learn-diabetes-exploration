@@ -1,58 +1,36 @@
+import utility as u
 import numpy as np
-import sys
-import matplotlib.pyplot as plt
-from sklearn.datasets import load_diabetes
+from sys import float_info
 from sklearn.tree import DecisionTreeRegressor, export_graphviz
-from sklearn.decomposition import KernelPCA
+from sklearn.model_selection import train_test_split
 
-# load dataset
-diabetes = load_diabetes()
-size = int(diabetes.data.shape[0])
-train_size = int(size*0.8)
 
-def rmse(target, prediction):
-    return np.sqrt(((target - prediction) ** 2).mean())
-
-def rnd_permutation(data, target):
-    # Random indices for training and testing data
-    rnd_indices = np.random.permutation(size)
-    train_indices = rnd_indices[:train_size]
-    test_indices = rnd_indices[train_size:]
-    
-    train_data = data[train_indices, :]
-    train_target = target[train_indices]
-    
-    test_data = data[test_indices, :]
-    test_target = target[test_indices]
-    
-    return train_data, train_target, test_data, test_target
-
-# Perform PCA
-transformer = KernelPCA(n_components=5, kernel='rbf', gamma=0.02)
-X_transformed = transformer.fit_transform(diabetes.data)
-
-for depth in range(1,6):
+# Find best decision tree over niter random permutations of the data.
+# A visualisation will be saved if dotfile is a file name with ".dot" extension
+def best_tree(diabetes, niter=10, dotfile=None):
     best_tree = None
     train_rmse = None
-    best_test_rmse = sys.float_info.max
+    best_test_rmse = float_info.max
 
-    for iterations in range(100):
-        train_data, train_target, test_data, test_target = rnd_permutation(X_transformed, diabetes.target)
-        tree = DecisionTreeRegressor(max_depth=depth)
+    for iterations in range(niter):
+        train_data, test_data, train_target, test_target = train_test_split(diabetes.data, diabetes.target, test_size=0.2)
+        tree = DecisionTreeRegressor(min_samples_leaf=15)
         tree.fit(train_data, train_target)
 
         # Evaluate tree
-        test_rmse = rmse(test_target, tree.predict(test_data))
+        test_rmse = u.rmse(test_target, tree.predict(test_data))
+
         if (test_rmse < best_test_rmse):
             best_test_rmse = test_rmse
             best_tree = tree
-            train_rmse = rmse(train_target, tree.predict(train_data))
-    
-    # Print RMSE of best tree
-    print("Tree of depth: ", depth)
-    print(best_tree.max_depth)
-    print("Rmse: ", "{:10.02f}".format(train_rmse), "{:10.02f}".format(best_test_rmse))
+            train_rmse = u.rmse(train_target, tree.predict(train_data))
 
-    # Save visualisation
-    file_name = 'tree' + str(depth) + '.dot'
-    export_graphviz(best_tree, max_depth=depth, out_file=file_name, rounded=True, filled=True)
+    # Print RMSE of best tree
+    print("Best decision tree:")
+    u.print_results(train_rmse, best_test_rmse)
+
+    if (dotfile != None):
+        # Save visualisation
+        export_graphviz(best_tree, max_depth=5, out_file=dotfile, rounded=True, filled=True, feature_names=["age", "sex", "BMI",
+            "Average Blood Pressure", "Blood Serum 1", "Blood Serum 2", "Blood Serum 3", "Blood Serum 4", "Blood Serum 5", "Blood Serum 6"])
+        print("Convert the .dot to .png using the command: dot -Tpng new.dot -o new.png")
